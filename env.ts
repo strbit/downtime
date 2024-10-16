@@ -24,7 +24,8 @@ export default cleanEnv(env, {
 	DATABASE_URL: str(),
 	DB_NAME: str(),
 	DB_COLLECTION: str(),
-	SUPPORT_CHAT: str(),
     ONCALL_ADMIN: num(),
     PROJECT_ID: str(),
+    SERVER_PORT: num(),
+	SUPPORT_CHAT: str(),
 });

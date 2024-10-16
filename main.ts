@@ -35,7 +35,7 @@ const client = new MongoClient(config.DATABASE_URL);
 const server = new Hono();
 
 const hostname = '::';
-const port = 443;
+const port = config.SERVER_PORT;
 const endpoint = '/downtime';
 
 let isDown = false;
