@@ -1,0 +1,31 @@
+{
+    "name": "downtime",
+    "type": "module",
+    "version": "0.0.0",
+    "description": "Downtime handler for the bot.",
+    "author": "difsn",
+    "license": "Apache-2.0",
+    "scripts": {
+        "dev": "tsc-watch --onSuccess \"tsx ./main.ts\"",
+        "start": "tsx ./main.ts"
+    },
+    "dependencies": {
+        "@grammyjs/i18n": "^1.1.2",
+        "@grammyjs/parse-mode": "^1.10.0",
+        "@hono/node-server": "^1.13.1",
+        "@types/node": "22.2.0",
+        "envalid": "^8.0.0",
+        "grammy": "^1.30.0",
+        "hono": "^4.6.3",
+        "mongodb": "^6.9.0",
+        "tsx": "^4.19.1",
+        "zod": "^3.23.8"
+    },
+    "engines": {
+        "node": ">=21"
+    },
+    "devDependencies": {
+        "tsc-watch": "6.2.0",
+        "typescript": "5.5.4"
+    }
+}
