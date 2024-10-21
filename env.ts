@@ -15,7 +15,7 @@
 */
 
 import { env, loadEnvFile } from 'node:process';
-import { cleanEnv, num, str } from 'envalid';
+import { bool, cleanEnv, num, str } from 'envalid';
 
 if (!process.env.NODE_ENV) loadEnvFile('./.env');
 
@@ -28,4 +28,5 @@ export default cleanEnv(env, {
     PROJECT_ID: str(),
     SERVER_PORT: num(),
 	SUPPORT_CHAT: str(),
+    FORCE_DOWNTIME: bool(),
 });
