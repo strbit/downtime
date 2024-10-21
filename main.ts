@@ -122,7 +122,11 @@ async function sendDowntimeNotice(ctx: BotContext, next: NextFunction): Promise<
                     reply_markup: { remove_keyboard: true },
                     parse_mode: 'HTML',
                 }
-            )
+            ).catch(() => {
+                console.log(
+                    `Dropped downtime notice message error.`
+                )
+            })
         }
     }
     await next();
