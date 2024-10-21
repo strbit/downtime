@@ -47,11 +47,15 @@ const client = new MongoClient(config.DATABASE_URL);
 /** The Hono server which will receive incoming downtime updates. */
 const server = new Hono({ strict: false });
 
+/** The endpoint which will process downtime updates. */
+const endpoint = '/downtime'; // make sure the endpoint follows the `strict` config.
+
 /** Hono binding information. */
-const serverBindings = {
+const serveOptions = {
+    fetch: server.fetch,
+    port: config.SERVER_PORT,
     hostname: '::',
-    endpoint: '/downtime',
-};
+}
 
 /**
  * Very simple method of storing the current state of the production instance. You can
@@ -125,8 +129,8 @@ async function sendDowntimeNotice(ctx: BotContext, next: NextFunction): Promise<
             ).catch(() => {
                 console.log(
                     `Dropped downtime notice message error.`
-                )
-            })
+                );
+            });
         }
     }
     await next();
@@ -204,16 +208,12 @@ server.onError(async (err, input) => {
 });
 
 // process incoming `POST` requests to the downtime endpoint.
-server.post(serverBindings.endpoint, processIncomingUpdate);
+server.post(endpoint, processIncomingUpdate);
 
-// serve the Hono instance on the set bind
-serve({
-    fetch: server.fetch,
-    hostname: serverBindings.hostname,
-    port: config.SERVER_PORT,
-}).listen(config.SERVER_PORT, serverBindings.hostname, () => {
+// serve the Hono instance on the set bind.
+serve(serveOptions).listen(serveOptions.port, serveOptions.hostname, () => {
     /** The full address (and endpoint) to which downtime updates can be sent. */
-    const address = `${serverBindings.hostname}:${config.SERVER_PORT}` + serverBindings.endpoint
+    const address = `${serveOptions.hostname}:${serveOptions.port}` + endpoint;
     console.log(
         `Accepting requests via`, address,
     );
