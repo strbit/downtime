@@ -38,7 +38,11 @@ const hostname = '::';
 const port = config.SERVER_PORT;
 const endpoint = '/downtime';
 
-let isDown = config.FORCE_DOWNTIME;
+let isDown = config.FORCE_DOWNTIME ?? false;
+
+if (config.FORCE_DOWNTIME) {
+    bot.start();
+}
 
 bot.use(i18n).use(async (ctx, next) => {
 	const userLocale = (ctx.from!.language_code as 'en' | 'ru' | undefined) ?? 'en';
