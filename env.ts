@@ -29,4 +29,6 @@ export default cleanEnv(env, {
     SERVER_PORT: num(),
 	SUPPORT_CHAT: str(),
     FORCE_DOWNTIME: bool(),
+    TEST_TOKEN: str(),
+    TEST_DATABASE: str(),
 });

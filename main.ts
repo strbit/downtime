@@ -40,10 +40,17 @@ const i18n = new I18n<BotContext>({
     useSession: true,
 });
 
+/** Whether or not the environment is temporary. */
+const isEphemeral = !!process.env.RAILWAY_ENVIRONMENT_NAME?.startsWith('bot-pr-');
+/** In ephemeral environments, uses the test token, otherwise, the production token. */
+const botToken = isEphemeral ? config.TEST_TOKEN : config.BOT_TOKEN;
+/** In ephemeral environments, uses the dev database, otherwise, the production database. */
+const databaseUrl = isEphemeral ? config.TEST_DATABASE : config.DATABASE_URL;
+
 /** The bot itself. Will be started and stopped depending on what requests are received. */
-const bot = new Bot<BotContext>(config.BOT_TOKEN); // use the same token as the production instance.
+const bot = new Bot<BotContext>(botToken);
 /** The raw MongoDB driver instance. This will not provide type suggestions. */
-const client = new MongoClient(config.DATABASE_URL);
+const client = new MongoClient(databaseUrl);
 /** The Hono server which will receive incoming downtime updates. */
 const server = new Hono({ strict: false });
 
