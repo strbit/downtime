@@ -202,12 +202,22 @@ async function processIncomingUpdate(request: HonoContext<BlankEnv, string, Blan
             // mark the bot as down for future requests.
             isDown = true;
 
+            // send delay start log.
+            console.log(
+                `Main instance down, starting ${config.DOWNTIME_DELAY}s. downtime delay.`
+            );
+
             // prevent the bot from starting on false errors.
             setTimeout(() => {
                 // if the bot is still down...
                 if (isDown) {
                     // start the handler.
                     bot.start({ onStart });
+                }
+                else {
+                    console.log(
+                        `Main instance recovered within ${config.DOWNTIME_DELAY}s., no handler was started.`
+                    );
                 }
             }, config.DOWNTIME_DELAY * 1000);
         }
