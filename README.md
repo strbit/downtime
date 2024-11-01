@@ -68,6 +68,25 @@ export async function sendDowntimeUpdate(down: boolean): Promise<void> {
 
 Using whatever method of error handling, whether the native `process.on()` or a custom implementation, simply call this function and pass a `boolean` to send a downtime update. This bot will handle everything else.
 
+### Environment variables:
+
+Here's a breakdown of every environment variable used by the project.
+
+| Variable           | Short Explanation.                                                                             | Recommended Value |
+|--------------------|------------------------------------------------------------------------------------------------|-------------------|
+| **BOT_TOKEN**      | The same token you use for the MAIN BOT!                                                       |                   |
+| **DATABASE_URL**   | The URL of the database where your users are stored.                                           |                   |
+| **DB_NAME**        | The name of the database.                                                                      |                   |
+| **DB_COLLECTION**  | The name of the collection within the database.                                                |                   |
+| **ONCALL_ADMIN**   | The Telegram ID of the user who should be notified when your bot goes down.                    | Yourself.         |
+| PROJECT_ID         | Internal.                                                                                      | 1                 |
+| **SERVER_PORT**    | The port to bind the downtime server to.                                                       | 443               |
+| **SUPPORT_CHAT**   | A short link through which users can contact you for support during downtime.                  |                   |
+| **FORCE_DOWNTIME** | Self-explanatory, will create a downtime without any requests.                                 | `false`           |
+| TEST_TOKEN         | Internal.                                                                                      | 1                 |
+| TEST_DATABASE      | Internal.                                                                                      | 1                 |
+| **DOWNTIME_DELAY** | How many seconds to wait before starting the downtime (incase your main bot can self-recover). | 60                |
+
 ### As for chat member updates:
 
 ✦ Don't forget that people will still block your bot, everytime that happens, this bot will update their block status in the connected database. **You will have to update the field which represents a user's block status.**
