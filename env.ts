@@ -31,4 +31,5 @@ export default cleanEnv(env, {
     FORCE_DOWNTIME: bool(),
     TEST_TOKEN: str(),
     TEST_DATABASE: str(),
+    DOWNTIME_DELAY: num(),
 });

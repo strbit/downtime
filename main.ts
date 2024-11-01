@@ -22,6 +22,7 @@ import { MongoClient } from "mongodb";
 import { Bot, Context, InlineKeyboard, NextFunction } from "grammy";
 import { I18n, I18nFlavor } from "@grammyjs/i18n";
 import config from './env.js';
+import { UserFromGetMe } from "grammy/types";
 
 /**
  * A copy of the default bot context provided by Grammy itself, except with
@@ -76,6 +77,8 @@ let isDown: boolean = config.FORCE_DOWNTIME || false;
  * by the context update. This is done to avoid issues once the production instance comes
  * back online. This function should be hooked up to a `my_chat_member` event.
  * 
+ * @async
+ * @function updateBlockState
  * @param ctx - The context to use.
  */
 async function updateBlockState(ctx: BotContext): Promise<void> {
@@ -115,6 +118,8 @@ async function updateBlockState(ctx: BotContext): Promise<void> {
  * This method will send a downtime notice message to any user who interacts with a bot during
  * its downtime session. You can use this as either a middleware or a `message` event callback.
  * 
+ * @async
+ * @function sendDowntimeNotice
  * @param ctx - The context to use.
  * @param next - The next function to use.
  */
@@ -144,12 +149,45 @@ async function sendDowntimeNotice(ctx: BotContext, next: NextFunction): Promise<
 }
 
 /**
+ * Executes a function which notifies an on-call admin once the downtime bot handler has been started.
+ * Refer to the environment set within the host for managing on-call admins.
+ * 
+ * @async
+ * @function onStart
+ * @param botInfo - Information about THIS bot, not the main instance.
+ */
+async function onStart(botInfo: UserFromGetMe): Promise<void> {
+    /** The URL linking to the Railway dashboard. */
+    const dashboardUrl = 'https://railway.app/project/' + config.PROJECT_ID;
+    /** The downtime alert to send to the on-call admin. */
+    const oncallNoticeMessage =
+        `<b>This is a service disruption alert, see hosting dashboard for details!</b>` +
+        '\n\n' +
+        `Traffic has been redirected to a temporary downtime handler.` +
+        '\n\n' +
+        `You (${config.ONCALL_ADMIN}) have been set as the on-call admin for service disruptions.`;
+    /** The title for the dashboard URL button. */
+    const dashboardButton = 'Visit the dashboard →';
+
+    // send the downtime alert to the set on-call admin.
+    await bot.api.sendMessage(config.ONCALL_ADMIN, oncallNoticeMessage, {
+        reply_markup: new InlineKeyboard().url(dashboardButton, dashboardUrl),
+        parse_mode: 'HTML',
+    });
+    console.log(
+        `Main instance down, starting handler as "${botInfo.id}".`
+    );
+}
+
+/**
  * Processes incoming downtime updates and either starts of stops the downtime handler. When the
  * handler is started, an alert will be sent to the on-call admin (set one through the `ONCALL_ADMIN` variable)
  * with a direct link to the Railway project.
  * 
  * Alerts to on-call admins are not sent to forced/manual downtimes.
  * 
+ * @async
+ * @function processIncomingUpdate
  * @param request - The incoming request to process.
  * @returns A JSON response.
  */
@@ -161,30 +199,17 @@ async function processIncomingUpdate(request: HonoContext<BlankEnv, string, Blan
     if (typeof json.down === 'boolean') {
         // if the bot is down, start the handler.
         if (json.down) {
-            bot.start({
-                onStart: async (botInfo) => {
-                    /** The URL linking to the Railway dashboard. */
-                    const dashboardUrl = 'https://railway.app/project/' + config.PROJECT_ID;
-                    /** The downtime alert to send to the on-call admin. */
-                    const oncallNoticeMessage =
-                        `<b>This is a service disruption alert, see hosting dashboard for details!</b>` +
-                        '\n\n' +
-                        `Traffic has been redirected to a temporary downtime handler.` +
-                        '\n\n' +
-                        `You (${config.ONCALL_ADMIN}) have been set as the on-call admin for service disruptions.`;
-                    /** The title for the dashboard URL button. */
-                    const dashboardButton = 'Visit the dashboard →';
+            // mark the bot as down for future requests.
+            isDown = true;
 
-                    // send the downtime alert to the set on-call admin.
-                    await bot.api.sendMessage(config.ONCALL_ADMIN, oncallNoticeMessage, {
-                        reply_markup: new InlineKeyboard().url(dashboardButton, dashboardUrl),
-                        parse_mode: 'HTML',
-                    });
-                    console.log(
-                        `Main instance down, starting handler as "${botInfo.id}".`
-                    );
-                },
-            });
+            // prevent the bot from starting on false errors.
+            setTimeout(() => {
+                // if the bot is still down...
+                if (isDown) {
+                    // start the handler.
+                    bot.start({ onStart });
+                }
+            }, config.DOWNTIME_DELAY * 1000);
         }
         // if the bot is online, stop.
         else {
